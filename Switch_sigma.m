@@ -27,20 +27,29 @@ switch flag,
         
      % state update 
     case 2
-        % Based on u(i) compute the monintoring signal Ji in a recursive
+        % Based on u(i) compute the monitoring signal Ji in a recursive
         % way for all inputs (prediction errors)
         
-        for i=1,m
-            Ji=
+        for i=1:m
+            Ji_longterm = u(i).^2 + exp(-lambda)*x(1:m);
+            Ji = u(i).^2 + beta * Ji_longterm;
         end
        
         % Write an algorithm for the Dwell-Time
         % DT shows the number of sampling period of waiting between two
         % switchings and is saved in x(m+2).
         % x(m+1) is the choice of the best predictor.
+        if (x(m+2) < DT)
+            x(m+2) = x(m+2) + 1; % Increase current time
+        end
         
+        [~, best] = min(Ji); % Instantaneous best controller
+        if (x(m+2) == DT && best ~= x(m+1))
+            x(m+2) = 0;
+            x(m+1) = best;
+        end
         
-        sys=[Ji;x(m+1);x(m+2)];
+        sys=[Ji_longterm;x(m+1);x(m+2)];
         
      % output update
     case 3
