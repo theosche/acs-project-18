@@ -11,7 +11,7 @@ function [sys,x0,str,ts]=aap(t,x,u,flag,nA,nB,d)
 
 n=nA+nB;
 Nstate=n*(n+2)+d+1;% The last state concernes the value of u(3) in the previous sampling time.
-deadzone=0; % this value can be chosen to freez adaptation if the adaptation error is too small.
+deadzone=0.01; % this value can be chosen to freeze adaptation if the adaptation error is too small.
 F0=eye(n);
 
 % The parameters of G1
@@ -52,16 +52,18 @@ switch flag,
         
         % Compute F(t+1) using matrix inversion lemma
         
-        F_p=
+        F_p = F_k - F_k*(phi_k*phi_k')*F_k/(1+phi_k'*F_k*phi_k);
         
         % Compute the a priori prediction error
-        epsilon=
+        epsilon = u(2) - theta_k'*phi_k;
         
         % Dead zone
-        
+        if epsilon < deadzone
+            epsilon = 0;
+        end
         
         % Compute the new estimate for theta
-        theta_p=
+        theta_p = theta_k + F_p*phi_k*epsilon;
         
         % Update the observation vector
         phi_p=[-u(2);x(n+1:n+nA-1);u(1);x(n+nA+1:2*n-1+d)];
@@ -77,8 +79,9 @@ switch flag,
         
     case 3
         % Compute yhat and theta_k
-        theta_k=
-        yhat=
+        theta_k = x(1:n);
+        phi_k = [x(n+1:n+nA);x(n+nA+d+1:2*n+d)];
+        yhat = theta_k*phi_k;
         sys=[yhat;theta_k];
 
     case 9
