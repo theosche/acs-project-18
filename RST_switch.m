@@ -1,4 +1,4 @@
-function [sys,x0,str,ts]=RST_switch(t,x,u,flag,R1,S1,R2,S2,R3,S3,Ts)
+function [sys,x0,str,ts]=RST_switch(t,x,u,flag,R1,S1,R2,S2,R3,S3,Ts,nr,ns,nt)
 % This S-Function computes the control signal of multi RST controllers.
 % There are three fixed RST controllers corresponding to the switching
 % signal {1,2,3} and one adaptive RST controller (switch=4).
@@ -10,9 +10,6 @@ function [sys,x0,str,ts]=RST_switch(t,x,u,flag,R1,S1,R2,S2,R3,S3,Ts)
 
 % It is assumed that all controller have the same order, otherwise the code
 % should be modified.
-nr=length(R1)-1;
-ns=length(S1)-1;
-nt=0;
 
 n=nr+ns+nt;
 
@@ -40,9 +37,8 @@ switch flag,
         x0  = zeros(sizes.NumDiscStates,1);
         str = [];
         ts  = [Ts 0];
-        
-        y_old = zeros(1,nr+1);
-        u_old = zeros(1,ns);
+        y_old = zeros(1,max([length(R1),length(R2),length(R3)]));
+        u_old = zeros(1,max([length(S1),length(S2),length(S3)])-1);
         % state update
     case 2
         switch u(1)
@@ -67,11 +63,14 @@ switch flag,
                 T=u(nr+ns+6:nr+ns+nt+6)';
         end
         % Compute the control signal and save it (do not forget the saturation)
+        ind_r = 1:length(R);
+        ind_s = 1:length(S)-1;
+        
         r_old = u(2);
-        y_old = [u(3),y_old(1,end-1)];
-        temp = addPoli(conv(T,r_old),conv(R,-y_old));
-        u_k = addPoli(temp,conv(S(2:end),-u_old));
-        u_old = [u_k,u_old(1,end-1)];
+        y_old = [u(3),y_old(1:end-1)];
+        temp = addPoli(T.*r_old,R.*(-y_old(ind_r)));
+        u_k = sum(addPoli(temp,S(2:end).*(-u_old(ind_s))))/S(1);
+        u_old = [u_k,u_old(1:end-1)];
         % Update the state vector (including past inputs, past outputs and past reference signals)
         if nt>0
             sys=[u_k;x(1:ns-1);u(3);x(ns+1:nr+ns-1);u(2);x(nr+ns+1:n-1)];
@@ -82,6 +81,9 @@ switch flag,
     case 3
         u_k = x(1);
         % Compute again u_k and send it out
+        if(sum(isnan(u_k)))
+            a =1;
+        end
         sys=u_k;
         
     case 9

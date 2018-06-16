@@ -1,16 +1,16 @@
 function [sys,x0,str,ts]=aap(t,x,u,flag,nA,nB,d)
 % This function is a parametric adaptation algorithm. It takes the input
-% and output of a system and computes the model parameters. The adaptation 
+% and output of a system and computes the model parameters. The adaptation
 % gain is initialized to F0 and the parameters are initialized to the
 % parameters of the last model chosen by the switching algorithm. The
 % function has three inputs: u(1) is the plant input, u(2) the plant output
 % and u(3) is the switching signal belongs to {1,2,3,4}. The output of the
 % block is the predicted output yhat and the vector of estimated
-% parameters theta. The parameter vector theta is initialized by the best 
-% model among the fixed one after each transition of the switching signal u(3). 
-
+% parameters theta. The parameter vector theta is initialized by the best
+% model among the fixed one after each transition of the switching signal u(3).
+persistent sigma
 n=nA+nB;
-Nstate=n*(n+2)+d+1;% The last state concernes the value of u(3) in the previous sampling time.
+Nstate=n*(n+2);
 deadzone=0.01; % this value can be chosen to freeze adaptation if the adaptation error is too small.
 F0=eye(n);
 
@@ -37,18 +37,34 @@ switch flag,
         sizes.NumInputs      = 3;
         sizes.DirFeedthrough = 0;
         sizes.NumSampleTimes = 1;
-
+        
         sys = simsizes(sizes);
-
+        sigma = 1;
         
         x0  = zeros(Nstate,1);
         str = [];
-        ts  = [-1 0]; 
+        ts  = [-1 0];
         
     case 2
-        theta_k=x(1:n);
-        phi_k=[x(n+1:n+nA);x(n+nA+d+1:2*n+d)];        
-        F_k=reshape(x(2*n+d+1:end-1),n,n);
+        if(t == 20)
+            a = 1;
+        end
+        if(u(3)~= sigma) % Check if the sigma change
+            switch(sigma)
+                case 1
+                    theta_k = [A1(2:end);B1(d+2:end)];
+                case 2
+                    theta_k = [A2(2:end);B2(d+2:end)];
+                case 3
+                    theta_k = [A3(2:end);B3(d+2:end)];
+            end
+        else
+            theta_k = x(1:n);
+        end
+        sigma = u(3);
+        
+        phi_k=[x(n+1:n+nA);x(n+nA+1:2*n)];
+        F_k=reshape(x(2*n+1:end),n,n);
         
         % Compute F(t+1) using matrix inversion lemma
         
@@ -66,27 +82,24 @@ switch flag,
         theta_p = theta_k + F_p*phi_k*epsilon;
         
         % Update the observation vector
-        phi_p=[-u(2);x(n+1:n+nA-1);u(1);x(n+nA+1:2*n-1+d)];
+        phi_p=[-u(2);x(n+1:n+nA-1);u(1);x(n+nA+1:2*n-1)];
         
-       
-        % Initialize the parameters with the best model in the transition 
+        
+        % Initialize the parameters with the best model in the transition
         % of the switching signal (its past value is saved in x(end))
         
-        if u(3)~= x(end)
-            % reinitialize the parameters acording to u(3)
-        end
-        sys=[theta_p;phi_p;reshape(F_p,n*n,1);u(3)];
+ 
+        sys=[theta_p;phi_p;reshape(F_p,n*n,1)];
         
     case 3
         % Compute yhat and theta_k
         theta_k = x(1:n);
-        phi_k = [x(n+1:n+nA);x(n+nA+d+1:2*n+d)];
-        yhat = theta_k*phi_k;
+        phi_k = [x(n+1:n+nA);x(n+nA+1:2*n)];
+        yhat = [1;theta_k(1:nA); zeros(d+1,1);theta_k(nA+1:end)]'*[1;phi_k(1:nA); zeros(d+1,1);phi_k(nA+1:end)];
         sys=[yhat;theta_k];
-
+        
     case 9
         sys=[];
- end
-    
-        
-        
+end
+
+

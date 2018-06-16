@@ -34,13 +34,17 @@ switch flag,
      % output update
     case 3
         A=[1;u(1:nA)]';
-        B=[zeros(d+1,1);u(nA+1:nB+nA)]';
-        
+        B=[zeros(d+1,1);u(nA+1:end)]';
+        if(t==20)
+            a = 1;
+        end
         % The students should write the code for computing an RST
         % controller
         [R,S] = poleplace(B,A,Hr,Hs,P);
+        ind = isnan(R);
+        R(ind) = zeros(size(R(ind)));
         T = sum(R);
-        sys=[R;S;T];
+        sys=[R,S,T]';
     case 9
         sys=[];
  end

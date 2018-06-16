@@ -21,7 +21,7 @@ switch flag,
 
         sys = simsizes(sizes);
         
-        x0  = [zeros(m,1);1;DT];
+        x0  = [zeros(m,1);0;1];
         str = [];
         ts  = [-1 0]; 
         
@@ -31,29 +31,29 @@ switch flag,
         % way for all inputs (prediction errors)
         
         for i=1:m
-            Ji_longterm = u(i).^2 + exp(-lambda)*x(1:m);
-            Ji = u(i).^2 + beta * Ji_longterm;
+            Ji_longterm = u.^2 + exp(-lambda)*x(1:m);
+            Ji = u.^2 + beta * Ji_longterm;
         end
        
         % Write an algorithm for the Dwell-Time
         % DT shows the number of sampling period of waiting between two
         % switchings and is saved in x(m+2).
         % x(m+1) is the choice of the best predictor.
-        if (x(m+2) < DT)
-            x(m+2) = x(m+2) + 1; % Increase current time
-        end
+        
+        x(m+1) = x(m+1) + 1; % Increase the counter 
         
         [~, best] = min(Ji); % Instantaneous best controller
-        if (x(m+2) == DT && best ~= x(m+1))
-            x(m+2) = 0;
-            x(m+1) = best;
+        
+        if (x(m+1) == DT) % Dwell-Time
+            x(m+1) = 0;
+            x(m+2) = best;
         end
         
         sys=[Ji_longterm;x(m+1);x(m+2)];
         
      % output update
     case 3
-        sys=x(m+1); 
+        sys=x(m+2); 
     case 9
         sys=[];
  end
