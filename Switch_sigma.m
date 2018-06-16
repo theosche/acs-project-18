@@ -30,11 +30,9 @@ switch flag,
         % Based on u(i) compute the monitoring signal Ji in a recursive
         % way for all inputs (prediction errors)
         
-        for i=1:m
-            Ji_longterm = u.^2 + exp(-lambda)*x(1:m);
-            Ji = u.^2 + beta * Ji_longterm;
-        end
-       
+        Ji_longterm = u.^2 + exp(-lambda)*x(1:m);
+        Ji = u.^2 + beta * Ji_longterm;
+        
         % Write an algorithm for the Dwell-Time
         % DT shows the number of sampling period of waiting between two
         % switchings and is saved in x(m+2).
@@ -42,8 +40,8 @@ switch flag,
         
         x(m+1) = x(m+1) + 1; % Increase the counter 
         
-        [~, best] = min(Ji); % Instantaneous best controller
-        
+        [~, best] = min(Ji(1:4)); % Instantaneous best controller
+%         best = best +1;
         if (x(m+1) == DT) % Dwell-Time
             x(m+1) = 0;
             x(m+2) = best;

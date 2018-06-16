@@ -8,7 +8,7 @@ function [sys,x0,str,ts]=aap(t,x,u,flag,nA,nB,d)
 % block is the predicted output yhat and the vector of estimated
 % parameters theta. The parameter vector theta is initialized by the best
 % model among the fixed one after each transition of the switching signal u(3).
-persistent sigma
+persistent sigma u_delay
 n=nA+nB;
 Nstate=n*(n+2);
 deadzone=0.01; % this value can be chosen to freeze adaptation if the adaptation error is too small.
@@ -39,15 +39,15 @@ switch flag,
         sizes.NumSampleTimes = 1;
         
         sys = simsizes(sizes);
-        sigma = 1;
-        
+        sigma = 0;
+        u_delay = zeros(d+1,1);
         x0  = zeros(Nstate,1);
         str = [];
         ts  = [-1 0];
         
     case 2
-        if(t == 20)
-            a = 1;
+        if(~sigma)
+            sigma = mod(u(3)-1,3)+1;
         end
         if(u(3)~= sigma) % Check if the sigma change
             switch(sigma)
@@ -57,7 +57,10 @@ switch flag,
                     theta_k = [A2(2:end);B2(d+2:end)];
                 case 3
                     theta_k = [A3(2:end);B3(d+2:end)];
+                case 4
+                    theta_k = x(1:n);
             end
+            x(2*n+1:end) = zeros(size(x(2*n+1:end)));
         else
             theta_k = x(1:n);
         end
@@ -82,8 +85,8 @@ switch flag,
         theta_p = theta_k + F_p*phi_k*epsilon;
         
         % Update the observation vector
-        phi_p=[-u(2);x(n+1:n+nA-1);u(1);x(n+nA+1:2*n-1)];
-        
+        u_delay = [u_delay(2:end); u(1)];
+        phi_p=[-u(2);x(n+1:n+nA-1);u_delay(1);x(n+nA+1:2*n-1)];
         
         % Initialize the parameters with the best model in the transition
         % of the switching signal (its past value is saved in x(end))
@@ -95,7 +98,7 @@ switch flag,
         % Compute yhat and theta_k
         theta_k = x(1:n);
         phi_k = [x(n+1:n+nA);x(n+nA+1:2*n)];
-        yhat = [1;theta_k(1:nA); zeros(d+1,1);theta_k(nA+1:end)]'*[1;phi_k(1:nA); zeros(d+1,1);phi_k(nA+1:end)];
+        yhat = theta_k'*phi_k;
         sys=[yhat;theta_k];
         
     case 9
