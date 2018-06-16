@@ -17,7 +17,7 @@ n=nr+ns+nt;
 %u(2): reference signal
 %u(3): output signal
 
-persistent y_old u_old
+persistent y_old u_old r_old
 
 %Usatplus=2;Usatminus=-2;
 
@@ -39,6 +39,7 @@ switch flag,
         ts  = [Ts 0];
         y_old = zeros(1,max([length(R1),length(R2),length(R3)]));
         u_old = zeros(1,max([length(S1),length(S2),length(S3)])-1);
+        r_old = zeros(1,length(R1));
         % state update
     case 2
         switch u(1)
@@ -46,7 +47,7 @@ switch flag,
                 R=R1;
                 S=S1;
                 % RST controller for G1
-                T=sum(R1);
+                T = R1;
             case 2
                 R=R2;
                 S=S2;
@@ -66,9 +67,11 @@ switch flag,
         ind_r = 1:length(R);
         ind_s = 1:length(S)-1;
         
-        r_old = u(2);
+        r_old = [u(2),r_old(1:end-1)];
         y_old = [u(3),y_old(1:end-1)];
-        temp = addPoli(T.*r_old,R.*(-y_old(ind_r)));
+        temp = T.*r_old;
+        temp = temp(1:length(T));
+        temp = addPoli(temp,R.*(-y_old(ind_r)));
         u_k = sum(addPoli(temp,S(2:end).*(-u_old(ind_s))))/S(1);
         u_old = [u_k,u_old(1:end-1)];
         % Update the state vector (including past inputs, past outputs and past reference signals)

@@ -21,9 +21,9 @@ nHs = length(Hs)-1; nHr = length(Hr)-1;
 nr = nA + nHs + nHr -1;
 ns = nB + nHs + nHr +d -1;
 nt = 0;
-% Suppervisor parameters
-beta = 1;
-lambda = 0.5;
-DT = 5;
+%% Suppervisor parameters
+beta = 100;
+lambda = 0.1;
+DT = 100;
 %% Simulation
 % sim('project.slx');
