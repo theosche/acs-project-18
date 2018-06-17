@@ -12,7 +12,6 @@ persistent sigma u_delay
 n=nA+nB;
 Nstate=n*(n+2);
 deadzone=0.01; % this value can be chosen to freeze adaptation if the adaptation error is too small.
-F0=eye(n);
 alpha_gain = 1;
 GI = 0.2;
 
@@ -40,7 +39,7 @@ switch flag,
         sizes.DirFeedthrough = 0;
         sizes.NumSampleTimes = 1;
         
-        sys = simsizes(sizes);
+        %sys = simsizes(sizes);
         sigma = 0;
         u_delay = zeros(d+1,1);
         x0  = zeros(Nstate,1);
@@ -49,7 +48,7 @@ switch flag,
         
         theta_k = zeros(size([A1(2:end);B1(d+2:end)]));
         phi_p = zeros(1,n);
-        F0 = GI*diag(ones(n,1));
+        F0 = GI*eye(n);
         sys=[theta_k;phi_p;reshape(F0,n*n,1)];
         
     case 2
