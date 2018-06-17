@@ -46,10 +46,10 @@ switch flag,
         ts  = [-1 0];
         
     case 2
-        if(~sigma)
-            sigma = mod(u(3)-1,3)+1;
-        end
         if(u(3)~= sigma) % Check if the sigma change
+            if(~sigma)
+                sigma = mod(u(3)-1,3)+1;
+            end
             switch(sigma)
                 case 1
                     theta_k = [A1(2:end);B1(d+2:end)];
@@ -60,7 +60,7 @@ switch flag,
                 case 4
                     theta_k = x(1:n);
             end
-            x(2*n+1:end) = zeros(size(x(2*n+1:end)));
+%             x(2*n+1:end) = zeros(size(x(2*n+1:end)));
         else
             theta_k = x(1:n);
         end

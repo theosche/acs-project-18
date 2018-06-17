@@ -22,8 +22,8 @@ nr = nA + nHs + nHr -1;
 ns = nB + nHs + nHr +d -1;
 nt = 0;
 %% Suppervisor parameters
-beta = 100;
-lambda = 0.1;
-DT = 100;
+beta = -1;
+lambda = 0.01;
+DT = 40;
 %% Simulation
 % sim('project.slx');
