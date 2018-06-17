@@ -13,6 +13,8 @@ n=nA+nB;
 Nstate=n*(n+2);
 deadzone=0.01; % this value can be chosen to freeze adaptation if the adaptation error is too small.
 F0=eye(n);
+alpha_gain = 1;
+GI = 0.2;
 
 % The parameters of G1
 B1=[0         0   -0.0062    0.0118   -0.0052    0.0068]';
@@ -45,6 +47,11 @@ switch flag,
         str = [];
         ts  = [-1 0];
         
+        theta_k = zeros(size([A1(2:end);B1(d+2:end)]));
+        phi_p = zeros(1,n);
+        F0 = GI*diag(ones(n,1));
+        sys=[theta_k;phi_p;reshape(F0,n*n,1)];
+        
     case 2
         if(~sigma)
             sigma = mod(u(3)-1,3)+1;
@@ -71,7 +78,10 @@ switch flag,
         
         % Compute F(t+1) using matrix inversion lemma
         
-        F_p = F_k - F_k*(phi_k*phi_k')*F_k/(1+phi_k'*F_k*phi_k);
+        %F_p = F_k - F_k*(phi_k*phi_k')*F_k/(1+phi_k'*F_k*phi_k);
+        % With a constant trace adaptation gain
+        F_p = F_k - F_k*(phi_k*phi_k')*F_k/(alpha_gain+phi_k'*F_k*phi_k);
+        F_p = n*GI/trace(F_p)*F_p;
         
         % Compute the a priori prediction error
         epsilon = u(2) - theta_k'*phi_k;
