@@ -12,8 +12,8 @@ persistent sigma u_delay
 n=nA+nB;
 Nstate=n*(n+2);
 deadzone=0.01; % this value can be chosen to freeze adaptation if the adaptation error is too small.
-alpha_gain = 1;
-GI = 0.2;
+% alpha_gain = 0.7;
+% GI = 2;
 
 % The parameters of G1
 B1=[0         0   -0.0062    0.0118   -0.0052    0.0068]';
@@ -39,22 +39,20 @@ switch flag,
         sizes.DirFeedthrough = 0;
         sizes.NumSampleTimes = 1;
         
-        %sys = simsizes(sizes);
+        sys = simsizes(sizes);
         sigma = 0;
         u_delay = zeros(d+1,1);
         x0  = zeros(Nstate,1);
         str = [];
-        ts  = [-1 0];
-        
-        theta_k = zeros(size([A1(2:end);B1(d+2:end)]));
-        phi_p = zeros(1,n);
-        F0 = GI*eye(n);
-        sys=[theta_k;phi_p;reshape(F0,n*n,1)];
-        
+        ts  = [-1 0];        
     case 2
         if(u(3)~= sigma) % Check if the sigma change
             if(~sigma)
                 sigma = mod(u(3)-1,3)+1;
+%                 F_k = GI*eye(n);
+                F_k=reshape(x(2*n+1:end),n,n);
+            else
+                F_k=reshape(x(2*n+1:end),n,n);
             end
             switch(sigma)
                 case 1
@@ -69,18 +67,18 @@ switch flag,
             x(2*n+1:end) = zeros(size(x(2*n+1:end)));
         else
             theta_k = x(1:n);
+            F_k=reshape(x(2*n+1:end),n,n);
         end
         sigma = u(3);
         
         phi_k=[x(n+1:n+nA);x(n+nA+1:2*n)];
-        F_k=reshape(x(2*n+1:end),n,n);
         
         % Compute F(t+1) using matrix inversion lemma
         
-        %F_p = F_k - F_k*(phi_k*phi_k')*F_k/(1+phi_k'*F_k*phi_k);
+        F_p = F_k - F_k*(phi_k*phi_k')*F_k/(1+phi_k'*F_k*phi_k);
         % With a constant trace adaptation gain
-        F_p = F_k - F_k*(phi_k*phi_k')*F_k/(alpha_gain+phi_k'*F_k*phi_k);
-        F_p = n*GI/trace(F_p)*F_p;
+%         F_p = F_k - F_k*(phi_k*phi_k')*F_k/(alpha_gain+phi_k'*F_k*phi_k);
+%         F_p = n*GI/trace(F_p)*F_p;
         
         % Compute the a priori prediction error
         epsilon = u(2) - theta_k'*phi_k;
