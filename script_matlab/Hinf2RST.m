@@ -13,4 +13,4 @@ end
 R1 = num;
 T1 = num;
 S1 = den;
-save('RSTG1','R1','S1','T1');
+save('RST_temp','R1','S1','T1');

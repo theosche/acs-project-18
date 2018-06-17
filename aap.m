@@ -53,10 +53,10 @@ switch flag,
         sys=[theta_k;phi_p;reshape(F0,n*n,1)];
         
     case 2
-        if(~sigma)
-            sigma = mod(u(3)-1,3)+1;
-        end
         if(u(3)~= sigma) % Check if the sigma change
+            if(~sigma)
+                sigma = mod(u(3)-1,3)+1;
+            end
             switch(sigma)
                 case 1
                     theta_k = [A1(2:end);B1(d+2:end)];

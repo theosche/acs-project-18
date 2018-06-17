@@ -41,7 +41,6 @@ switch flag,
         x(m+1) = x(m+1) + 1; % Increase the counter 
         
         [~, best] = min(Ji(1:4)); % Instantaneous best controller
-%         best = best +1;
         if (x(m+1) == DT) % Dwell-Time
             x(m+1) = 0;
             x(m+2) = best;

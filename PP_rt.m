@@ -16,9 +16,9 @@ switch flag,
         sizes = simsizes;
         sizes.NumContStates  = 0;
         sizes.NumDiscStates  = 0;
-        sizes.NumOutputs     = nA+nB+d+n_Hr+n_Hs+3;
+        sizes.NumOutputs     = nA + 2*n_Hs + 2*n_Hr + nB + d + 1;
         sizes.NumInputs      = nA+nB;
-        sizes.DirFeedthrough = nA+nB+d+n_Hr+n_Hs+3;
+        sizes.DirFeedthrough = nA + 2*n_Hs + 2*n_Hr + nB + d + 1;
         sizes.NumSampleTimes = 1;
 
         sys = simsizes(sizes);

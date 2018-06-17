@@ -15,15 +15,17 @@ load('RST/RSTG2.mat');
 load('RST/RSTG3.mat');
 % Polynomial for controller 4
 load('RST/polynomial.mat');
-Hr = [1,1];
-Hs = [1,-1];
+% Hr = 0;
+% Hs = 0;
+Hr = [1 1];
+Hs = [1 -1];
 nHs = length(Hs)-1; nHr = length(Hr)-1;
 nr = nA + nHs + nHr -1;
 ns = nB + nHs + nHr +d -1;
 nt = 0;
 %% Suppervisor parameters
-beta = 100;
-lambda = 0.1;
-DT = 100;
+beta = 0.5;
+lambda = 0.5;
+DT = 40;
 %% Simulation
 % sim('project.slx');
