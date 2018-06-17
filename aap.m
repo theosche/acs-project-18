@@ -60,7 +60,7 @@ switch flag,
                 case 4
                     theta_k = x(1:n);
             end
-%             x(2*n+1:end) = zeros(size(x(2*n+1:end)));
+            x(2*n+1:end) = zeros(size(x(2*n+1:end)));
         else
             theta_k = x(1:n);
         end
